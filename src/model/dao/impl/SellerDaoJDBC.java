@@ -99,8 +99,43 @@ public class SellerDaoJDBC implements SellerDao{
 
 	@Override
 	public List<Seller> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		
+		try {
+			
+			st = conn.prepareStatement("Select s.*, d.name \r\n"
+					+ "from seller s \r\n"
+					+ "Inner join department d\r\n"
+					+ "on s.DepartmentId = d.Id\r\n"
+					+ "Order By s.name;");
+			
+			rs = st.executeQuery();
+			// Enquanto houver resultado, cria instâncias do Seller e Department específicos
+			List<Seller> list = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>(); // para ñ repetir Department
+			while (rs.next()) {
+				// Verifica no map se há um department com um id específico, se ñ existir retorna null
+				Department dep = map.get(rs.getInt("DepartmentId")); 
+				
+				if (dep == null) { // Se não houver o departamento, inclua um no map
+					dep = instanciarDepartment(rs);
+					map.put(rs.getInt("DepartmentId"), dep);
+				}
+				
+				Seller seller = intanciarSeller(rs, dep);
+				list.add(seller);				
+			}
+			
+			return list; // Se houver resultados, retorna a Lista de Sellers
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+			
+		} finally {
+			DB.fecharStatement(st);
+			DB.fecharResultSet(rs);
+		}
 	}
 
 	@Override
@@ -121,7 +156,7 @@ public class SellerDaoJDBC implements SellerDao{
 			rs = st.executeQuery();
 			// Enquanto houver resultado, cria instâncias do Seller e Department específicos
 			List<Seller> list = new ArrayList<>();
-			Map<Integer, Department> map = new HashMap<>(); // para ñ repetie Department
+			Map<Integer, Department> map = new HashMap<>(); // para ñ repetir Department
 			while (rs.next()) {
 				// Verifica no map se há um department com um id específico, se ñ existir retorna null
 				Department dep = map.get(rs.getInt("DepartmentId")); 
