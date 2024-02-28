@@ -8,7 +8,7 @@ import model.dao.impl.SellerDaoJDBC;
 public class DaoFactory {
 	// Forma de Esconder a implementação
 	public static SellerDao createSellerDao() {
-		return new SellerDaoJDBC(DB.estabelecerConexao());
+		return new SellerDaoJDBC(DB.estabelecerConexao()); // Construtor explícito de SellerDaoJDBC
 	}
 	
 	public static DepartmentDao createDepartmentDao() {

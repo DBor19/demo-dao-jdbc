@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbException;
@@ -16,7 +19,7 @@ public class SellerDaoJDBC implements SellerDao{
 	
 	private Connection conn;
 	
-	public SellerDaoJDBC(Connection conn) {
+	public SellerDaoJDBC(Connection conn) { // Injeção de Dependência (objeto conn: criado e fechado em Program)
 		this.conn = conn;
 	}
 	
@@ -57,7 +60,6 @@ public class SellerDaoJDBC implements SellerDao{
 			// Se houver resultado, cria instâncias do Seller e Department específicos
 			if (rs.next()) {
 				Department dep = instanciarDepartment(rs);
-				
 				Seller seller = intanciarSeller(rs, dep);
 				
 				return seller; // Se houver resultados, retorna o Seller Específico
@@ -99,6 +101,49 @@ public class SellerDaoJDBC implements SellerDao{
 	public List<Seller> findAll() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public List<Seller> findByDepartment(Department department) {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		
+		try {
+			
+			st = conn.prepareStatement("Select s.*, d.name \r\n"
+					+ "from seller s \r\n"
+					+ "Inner join department d\r\n"
+					+ "on s.DepartmentId = d.Id\r\n"
+					+ "where s.DepartmentId = ?\r\n"
+					+ "Order By s.name;");
+			
+			st.setInt(1, department.getId());
+			rs = st.executeQuery();
+			// Enquanto houver resultado, cria instâncias do Seller e Department específicos
+			List<Seller> list = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>(); // para ñ repetie Department
+			while (rs.next()) {
+				// Verifica no map se há um department com um id específico, se ñ existir retorna null
+				Department dep = map.get(rs.getInt("DepartmentId")); 
+				
+				if (dep == null) { // Se não houver o departamento, inclua um no map
+					dep = instanciarDepartment(rs);
+					map.put(rs.getInt("DepartmentId"), dep);
+				}
+				
+				Seller seller = intanciarSeller(rs, dep);
+				list.add(seller);				
+			}
+			
+			return list; // Se houver resultados, retorna a Lista de Sellers
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+			
+		} finally {
+			DB.fecharStatement(st);
+			DB.fecharResultSet(rs);
+		}
 	}
 
 }
