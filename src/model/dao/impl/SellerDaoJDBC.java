@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +26,40 @@ public class SellerDaoJDBC implements SellerDao{
 	
 	@Override
 	public void insert(Seller seller) {
-		// TODO Auto-generated method stub
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement("Insert into seller \r\n"
+					+ "(Name, Email, BirthDate, BaseSalary, DepartmentId)\r\n"
+					+ "Values\r\n"
+					+ "(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			
+			st.setString(1, seller.getName());
+			st.setString(2, seller.getEmail());
+			st.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
+			st.setDouble(4, seller.getBaseSalary());
+			st.setInt(5, seller.getDp().getId());
+			
+			int rowsAffected = st.executeUpdate();	
+			
+			if(rowsAffected > 0) {
+				ResultSet rs = st.getGeneratedKeys();
+				if (rs.next()) {
+					int id = rs.getInt(1);
+					seller.setId(id);
+					
+				} 
+				DB.fecharResultSet(rs);
+				System.out.println("Registro inserido com sucesso!");
+			} else {
+				throw new DbException("Erro inesperado, nenhuma linha afetada");
+			}
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+			
+		} finally {
+			DB.fecharStatement(st);
+		}
 		
 	}
 
