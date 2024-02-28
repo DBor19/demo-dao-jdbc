@@ -50,23 +50,15 @@ public class SellerDaoJDBC implements SellerDao{
 					+ "from seller s \r\n"
 					+ "Inner join department d \r\n"
 					+ "on s.DepartmentId = d.Id\r\n"
-					+ "Where s.DepartmentId = ?");
+					+ "Where s.Id = ?");
 			
 			st.setInt(1, id);
 			rs = st.executeQuery();
 			// Se houver resultado, cria instâncias do Seller e Department específicos
 			if (rs.next()) {
-				Department dep = new Department();
-				dep.setId(rs.getInt("Id"));
-				dep.setName(rs.getString("Name"));
+				Department dep = instanciarDepartment(rs);
 				
-				Seller seller = new Seller();
-				seller.setId(rs.getInt("Id"));
-				seller.setName(rs.getString("Name"));
-				seller.setEmail(rs.getString("Email"));
-				seller.setBaseSalary(rs.getDouble("BaseSalary"));
-				seller.setBirthDate(rs.getDate("BirthDate"));
-				seller.setDp(dep);
+				Seller seller = intanciarSeller(rs, dep);
 				
 				return seller; // Se houver resultados, retorna o Seller Específico
 			}
@@ -81,6 +73,26 @@ public class SellerDaoJDBC implements SellerDao{
 			DB.fecharResultSet(rs);
 		}
 		
+	}
+	
+	// Método de instanciar um Seller a partir de um ResultSet
+	private Seller intanciarSeller(ResultSet rs, Department dep) throws SQLException{
+		Seller seller = new Seller();
+		seller.setId(rs.getInt("Id"));
+		seller.setName(rs.getString("Name"));
+		seller.setEmail(rs.getString("Email"));
+		seller.setBaseSalary(rs.getDouble("BaseSalary"));
+		seller.setBirthDate(rs.getDate("BirthDate"));
+		seller.setDp(dep);
+		return seller;
+	}
+
+	// Método de instanciação de um Department a partir de um ResultSet
+	private Department instanciarDepartment(ResultSet rs) throws SQLException {
+		Department dep = new Department();
+		dep.setId(rs.getInt("Id"));
+		dep.setName(rs.getString("Name"));
+		return dep;
 	}
 
 	@Override

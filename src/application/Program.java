@@ -13,8 +13,8 @@ public class Program {
 		// Cria uma instância de SellerDao sem mostrar sua implementação
 		SellerDao sellerDao = DaoFactory.createSellerDao();
 		
-		Seller seller = sellerDao.findById(2);
-		
+		System.out.println("===Teste 1: seller findById===");
+		Seller seller = sellerDao.findById(3);
 		System.out.println(seller);
 	}
 
