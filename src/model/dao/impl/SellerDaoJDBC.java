@@ -25,14 +25,17 @@ public class SellerDaoJDBC implements SellerDao {
 	}
 
 	@Override
-	public void insert(Seller seller) {
+	// Cria-se um objeto Seller (com id = null e o resto preenchido) no Program e aplica o insert
+	public void insert(Seller seller) { 
 		PreparedStatement st = null;
 		try {
 			st = conn.prepareStatement("Insert into seller \r\n"
-					+ "(Name, Email, BirthDate, BaseSalary, DepartmentId)\r\n" + "Values\r\n" + "(?, ?, ?, ?, ?)",
+					+ "(Name, Email, BirthDate, BaseSalary, DepartmentId)\r\n" 
+					+ "Values\r\n" + "(?, ?, ?, ?, ?)",
 					Statement.RETURN_GENERATED_KEYS);
-
-			st.setString(1, seller.getName());
+			
+			// Substitui os placeholders pelo que foi passado no construtor do objeto seller em Program
+			st.setString(1, seller.getName()); 
 			st.setString(2, seller.getEmail());
 			st.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
 			st.setDouble(4, seller.getBaseSalary());
@@ -41,11 +44,11 @@ public class SellerDaoJDBC implements SellerDao {
 			int rowsAffected = st.executeUpdate();
 
 			if (rowsAffected > 0) {
-				ResultSet rs = st.getGeneratedKeys();
+				ResultSet rs = st.getGeneratedKeys(); // Obtém as chaves geradas no autoincremento
 				if (rs.next()) {
-					int id = rs.getInt(1);
-					seller.setId(id);
-
+					int id = rs.getInt(1); // Obtém o valor da 1ª linah da coluna 1 do ResultSet
+					seller.setId(id); // Atribui ao Id de Seller o valor da 1ª linha da coluna 1
+					
 				}
 				DB.fecharResultSet(rs);
 				System.out.println("Registro inserido com sucesso!");
@@ -124,7 +127,8 @@ public class SellerDaoJDBC implements SellerDao {
 					+ "on s.DepartmentId = d.Id\r\n" + "Where s.Id = ?");
 
 			st.setInt(1, id);
-			rs = st.executeQuery();
+			rs = st.executeQuery(); // retorna um objeto ResultSet com os resultados
+			
 			// Se houver resultado, cria instâncias do Seller e Department específicos
 			if (rs.next()) {
 				Department dep = instanciarDepartment(rs);
@@ -178,10 +182,9 @@ public class SellerDaoJDBC implements SellerDao {
 			rs = st.executeQuery();
 			// Enquanto houver resultado, cria instâncias do Seller e Department específicos
 			List<Seller> list = new ArrayList<>();
-			Map<Integer, Department> map = new HashMap<>(); // para ñ repetir Department
+			Map<Integer, Department> map = new HashMap<>(); // para ñ repetir Department, associar a 1 
 			while (rs.next()) {
-				// Verifica no map se há um department com um id específico, se ñ existir
-				// retorna null
+				// Verifica no map se há um department com um id específico, se ñ existir retorna null
 				Department dep = map.get(rs.getInt("DepartmentId"));
 
 				if (dep == null) { // Se não houver o departamento, inclua um no map
